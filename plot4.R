@@ -4,6 +4,7 @@ setwd("~/Coursera/Assignment4_20161218")
 NEI <- readRDS("summarySCC_PM25.rds")
 SCC <- readRDS("Source_Classification_Code.rds")
 
+library(ggplot2)
 
 # Combustion of coal other related sources
 SCC_coal = SCC[grepl("coal", SCC$Short.Name, ignore.case=TRUE),]
