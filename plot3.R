@@ -8,6 +8,7 @@ setwd("~/Coursera/Assignment4_20161218")
 NEI <- readRDS("summarySCC_PM25.rds")
 SCC <- readRDS("Source_Classification_Code.rds")
 
+library(ggplot2)
 
 #Baltimore's subset to fip.
 NEI_baltimore <- NEI[ NEI$fips=="24510", ]
