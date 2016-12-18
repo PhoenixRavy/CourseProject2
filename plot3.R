@@ -12,17 +12,16 @@ SCC <- readRDS("Source_Classification_Code.rds")
 #Baltimore's subset to fip.
 NEI_baltimore <- NEI[ NEI$fips=="24510", ]
 
-# Summarize Baltimore's city emissions per year
-sum_NEI_Baltimore <- aggregate(Emissions ~ year, NEI_baltimore, sum)
+#for these specific years
+NEI_baltimore$year <- factor(NEI_baltimore$year, levels=c('1999', '2002', '2005', '2008'))
 
-png("plot3.png",width=480,height=480)
+#create plot
+png('plot3.png', width=800, height=500)
 
-library(ggplot2)
+ggplot(data=NEI_baltimore, aes(x=year, y=log(Emissions))) + facet_grid(. ~ type) + guides(fill=F) +
+    geom_boxplot(aes(fill=type)) + stat_boxplot(geom ='errorbar') +
+    ylab(expression(paste('Log(', ' emissions', ' of PM'[2.5],')'))) + xlab('Year') + 
+    ggtitle('Emissions per type in Baltimore City (Maryland)') +
+    geom_jitter(alpha=0.10)
 
-plottosave <- ggplot(NEI_baltimore, aes(factor(year), Emissions, fill=type)) + geom_bar(stat="identity") + theme_bw() + 
-    guides(fill=FALSE) +  facet_grid(.~type,scales = "free",space="free") + 
-    labs(x="year", y=expression("PM"[2.5]*" total emission (Tons)")) + 
-    labs(title=expression("Emissions of PM"[2.5]*", in Baltimore City, Maryland for these specific years"))
-
-print(plottosave)
 dev.off()
