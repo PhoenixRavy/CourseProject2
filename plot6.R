@@ -6,67 +6,25 @@ setwd("~/Coursera/Assignment4_20161218")
 NEI <- readRDS("summarySCC_PM25.rds")
 SCC <- readRDS("Source_Classification_Code.rds")
 
-# specify the years
-NEI_year <- factor(NEI$year, levels=c('1999', '2002', '2005', '2008'))
+#load library ggplot
+library(ggplot2)
 
-# For specific fips and type (subset) : Baltimore City MD and Los Angeles (CA)
-MD_onroad <- subset(NEI, fips== "24510" & type== 'ON-ROAD')
-CA_onroad <- subset(NEI, fips== "06037" & type== 'ON-ROAD')
+em_MD <- NEI[(NEI$fips == "24510") & (NEI$type == "ON-ROAD"),]
+em_MD_aggr <- aggregate(Emissions ~ year, data=em_MD, FUN=sum)
 
-# Summarize
+# Get Los Angeles emissions from motor vehicle sources
+em_CA <- NEI[(NEI$fips == "06037") & (NEI$type == "ON-ROAD"),]
+em_CA_aggr <- aggregate(Emissions ~ year, data=em_CA, FUN=sum)
 
-sum_em_baltimore <- aggregate(MD_onroad[, 'Emissions'], by=list(MD_onroad$year), sum)
-col_names_sum_em_baltimore 
-colnames(sum_em_baltimore)<- c('year', 'Emissions')
-sum_em_baltimore$City <- paste(rep('MD', 4))
+em_MD_aggr$County <- "Baltimore City, MD"
+em_CA_aggr$County <- "Los Angeles County, CA"
+em_MD_CA <- rbind(em_MD_aggr, em_CA_aggr)
 
+# Create plot
+png("plot6.png")
 
-sum_em_losangeles <- aggregate(CA_onroad[, 'Emissions'], by=list(CA_onroad$year), sum)
-colnames(sum_em_losangeles) <- c('year', 'Emissions')
-CA.DF$City <- paste(rep('CA', 4))
-
-DF <- as.data.frame(rbind(MD.DF, CA.DF))
-
-
-# Generate the graph in the same directory as the source code
-png('~/Exploratory_Data_Analysis/Assignment_2/plot6.png')
-
-ggplot(data=DF, aes(x=year, y=Emissions)) + geom_bar(aes(fill=year)) + guides(fill=F) + 
-    ggtitle('Total Emissions of Motor Vehicle Sources\nLos Angeles County, California vs. Baltimore City, Maryland') + 
-    ylab(expression('PM'[2.5])) + xlab('Year') + theme(legend.position='none') + facet_grid(. ~ City) + 
-    geom_text(aes(label=round(Emissions,0), size=1, hjust=0.5, vjust=-1))
-
-dev.off()
-
-#####
-NEI$year <- factor(NEI$year, levels=c('1999', '2002', '2005', '2008'))
-
-# Baltimore City, Maryland
-# Los Angeles County, California
-MD.onroad <- subset(NEI, fips == '24510' & type == 'ON-ROAD')
-CA.onroad <- subset(NEI, fips == '06037' & type == 'ON-ROAD')
-
-# Aggregate
-MD.DF <- aggregate(MD.onroad[, 'Emissions'], by=list(MD.onroad$year), sum)
-colnames(MD.DF) <- c('year', 'Emissions')
-MD.DF$City <- paste(rep('MD', 4))
-
-CA.DF <- aggregate(CA.onroad[, 'Emissions'], by=list(CA.onroad$year), sum)
-colnames(CA.DF) <- c('year', 'Emissions')
-CA.DF$City <- paste(rep('CA', 4))
-
-DF <- as.data.frame(rbind(MD.DF, CA.DF))
-
-# Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources 
-# in Los Angeles County, California (fips == 06037). Which city has seen greater changes over time 
-# in motor vehicle emissions?
-
-# Generate the graph in the same directory as the source code
-png('~/Exploratory_Data_Analysis/Assignment_2/plot6.png')
-
-ggplot(data=DF, aes(x=year, y=Emissions)) + geom_bar(aes(fill=year)) + guides(fill=F) + 
-    ggtitle('Total Emissions of Motor Vehicle Sources\nLos Angeles County, California vs. Baltimore City, Maryland') + 
-    ylab(expression('PM'[2.5])) + xlab('Year') + theme(legend.position='none') + facet_grid(. ~ City) + 
-    geom_text(aes(label=round(Emissions,0), size=1, hjust=0.5, vjust=-1))
+ggplot(em_MD_CA, aes(x=factor(year), y=Emissions, fill=County)) + geom_bar(aes(fill=year),stat="identity") + 
+    facet_grid(County  ~ ., scales="free") + xlab("Year") + ylab("PM2.5 total mission (kilotons)") + 
+    ggtitle(expression("Motor vehicle total emission in Baltimore (MD) and Los Angeles (CA)"))
 
 dev.off()
